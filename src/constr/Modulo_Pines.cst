@@ -1,0 +1,62 @@
+IO_LOC  "fil[0]" 70;
+IO_PORT "fil[0]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+
+IO_LOC  "fil[1]" 71;
+IO_PORT "fil[1]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+
+IO_LOC  "fil[2]" 72;
+IO_PORT "fil[2]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+
+IO_LOC  "fil[3]" 73;
+IO_PORT "fil[3]" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+
+IO_LOC  "col[0]" 57;
+IO_PORT "col[0]" DRIVE=16 IO_TYPE=LVCMOS33 PULL_MODE=DOWN;
+
+IO_LOC  "col[1]" 56;
+IO_PORT "col[1]" DRIVE=16 IO_TYPE=LVCMOS33 PULL_MODE=DOWN;
+
+IO_LOC  "col[2]" 55;
+IO_PORT "col[2]" DRIVE=16 IO_TYPE=LVCMOS33 PULL_MODE=DOWN;
+
+IO_LOC  "col[3]" 54;
+IO_PORT "col[3]" DRIVE=16 IO_TYPE=LVCMOS33 PULL_MODE=DOWN;
+
+IO_LOC  "seven[0]" 28;
+IO_PORT "seven[0]" IO_TYPE=LVCMOS33;
+
+IO_LOC  "seven[1]" 26;
+IO_PORT "seven[1]" IO_TYPE=LVCMOS33;
+
+IO_LOC  "seven[2]" 33;
+IO_PORT "seven[2]" IO_TYPE=LVCMOS33;
+
+IO_LOC  "seven[3]" 30;
+IO_PORT "seven[3]" IO_TYPE=LVCMOS33;
+
+IO_LOC  "seven[4]" 29;
+IO_PORT "seven[4]" IO_TYPE=LVCMOS33;
+
+IO_LOC  "seven[5]" 27;
+IO_PORT "seven[5]" IO_TYPE=LVCMOS33;
+
+IO_LOC  "seven[6]" 25;
+IO_PORT "seven[6]" IO_TYPE=LVCMOS33;
+
+IO_LOC  "rst" 3;
+IO_PORT "rst" IO_TYPE=LVCMOS33;
+
+IO_LOC  "clk" 52;
+IO_PORT "clk" IO_TYPE=LVCMOS33;
+
+IO_LOC  "anodo[0]" 40;
+IO_PORT "anodo[0]" IO_TYPE=LVCMOS33;
+
+IO_LOC  "anodo[1]" 42;
+IO_PORT "anodo[1]" IO_TYPE=LVCMOS33;
+
+IO_LOC  "anodo[2]" 41;
+IO_PORT "anodo[2]" IO_TYPE=LVCMOS33;
+
+IO_LOC  "anodo[3]" 35;
+IO_PORT "anodo[3]" IO_TYPE=LVCMOS33;
