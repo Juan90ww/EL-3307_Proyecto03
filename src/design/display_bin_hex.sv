@@ -23,7 +23,7 @@ module display_bin_hex (
             4'b1101: seven = 7'b1000010; // d
           //4'b1110: seven = 7'b0110000; // E
           //4'b1111: seven = 7'b0111000; // F
-            4'b1111: seven = 7'b1111111;
+            4'b1111: seven = 7'b1111111; // Apagado
             default: seven = 7'b1111111; // apagado
         endcase
     end

@@ -4,7 +4,7 @@ FAMILY = GW1N-9C
 DEVICE = GW1NR-LV9QN88PC6/I5
 
 # Nombre del proyecto
-PROYECT = proyecto_02
+PROYECT = proyecto_03
 
 # Archivos fuente de diseño
 SOURCES := $(wildcard ../design/*.v ../design/*.sv)
@@ -14,13 +14,13 @@ CONSTRAINTS = ../constr/Modulo_Pines.cst
 
 # Nombre del módulo top (sin extensión)
 TOP_DESIGN = top
-TOP_TB     = tb_top
+TOP_TB     = tb_registro
 
 # Testbench por defecto (top-level)
 TESTBENCH = ../sim/$(TOP_TB).sv
 
 # Archivo de ondas VCD
-VCD_FILE = tb_top.vcd
+VCD_FILE = tb_registro.vcd
 
 # Simulación del top por defecto
 test: $(SOURCES) $(TESTBENCH)
@@ -36,7 +36,7 @@ wv: $(VCD_FILE)
 
 # Simulación individual por módulo
 # Uso: make tb=tb_nombre test-single
-tb ?= tb_top
+tb ?= tb_registro
 
 test-single:
 	@echo "Simulando testbench individual: $(tb)"
