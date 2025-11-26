@@ -12,6 +12,20 @@
 
 [4] razavi b. (2013) fundamentals of microelectronics. segunda edición. john wiley & sons
 
-## 3. Introduccion 
+## 3. Descripción general del funcionamiento del circuito
 
-### 3.1 Resumen 
+### 3.1 Descripción general
+
+### 3.2 Descripción de cada subsistema 
+
+### 3.3 Diagramas de bloques 
+
+### 3.4 Diagramas de estado 
+
+## 4. Simulación funcional del sistema completo
+
+## 5. Análisis de consumo de recursos
+
+## 6. Reporte de velocidades
+
+## 7, Análisis de principales problemas hallados durante el trabajo 
