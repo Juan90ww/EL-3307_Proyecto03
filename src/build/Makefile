@@ -14,13 +14,13 @@ CONSTRAINTS = ../constr/Modulo_Pines.cst
 
 # Nombre del módulo top (sin extensión)
 TOP_DESIGN = top
-TOP_TB     = tb_registro
+TOP_TB     = tb_operacion
 
 # Testbench por defecto (top-level)
 TESTBENCH = ../sim/$(TOP_TB).sv
 
 # Archivo de ondas VCD
-VCD_FILE = tb_registro.vcd
+VCD_FILE = tb_top.vcd
 
 # Simulación del top por defecto
 test: $(SOURCES) $(TESTBENCH)
@@ -36,7 +36,7 @@ wv: $(VCD_FILE)
 
 # Simulación individual por módulo
 # Uso: make tb=tb_nombre test-single
-tb ?= tb_registro
+tb ?= tb_top
 
 test-single:
 	@echo "Simulando testbench individual: $(tb)"
