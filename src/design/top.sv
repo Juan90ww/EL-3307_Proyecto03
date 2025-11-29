@@ -1,8 +1,8 @@
 module top #(
     // Espera por defecto de ~650 ms @27 MHz
-    parameter int WAIT_CYCLES     = 17_550_000,
-    // Espera antes de lanzar start de la operación (ej. ~20ms @27MHz → 540000)
-    parameter int OP_WAIT_CYCLES  = 540_000
+    parameter int WAIT_CYCLES = 17_550_000,
+    // *** NUEVO ***: ciclos que esperamos en OPERACION antes de “congelar” Q y R
+    parameter int OP_CYCLES   = 16
 )(
     input  logic       clk,   // Reloj de 27 MHz
     input  logic       rst,   // Reset activo en bajo
@@ -18,34 +18,11 @@ module top #(
     logic [3:0] filas_debounce;
     logic [3:0] boton_press;
 
-    debounce f0 (
-        .clk         (clk),
-        .rst         (rst),
-        .key         (fil[0]),
-        .key_pressed (filas_debounce[0])
-    );
-
-    debounce f1 (
-        .clk         (clk),
-        .rst         (rst),
-        .key         (fil[1]),
-        .key_pressed (filas_debounce[1])
-    );
-
-    debounce f2 (
-        .clk         (clk),
-        .rst         (rst),
-        .key         (fil[2]),
-        .key_pressed (filas_debounce[2])
-    );
-
-    debounce f3 (
-        .clk         (clk),
-        .rst         (rst),
-        .key         (fil[3]),
-        .key_pressed (filas_debounce[3])
-    );
-
+    debounce f0 (.clk(clk), .rst(rst), .key(fil[0]), .key_pressed(filas_debounce[0]));
+    debounce f1 (.clk(clk), .rst(rst), .key(fil[1]), .key_pressed(filas_debounce[1]));
+    debounce f2 (.clk(clk), .rst(rst), .key(fil[2]), .key_pressed(filas_debounce[2]));
+    debounce f3 (.clk(clk), .rst(rst), .key(fil[3]), .key_pressed(filas_debounce[3]));
+    
     //========================================================
     // 2) Teclado (scanner)
     //========================================================
@@ -103,67 +80,34 @@ module top #(
     //========================================================
     // 5) Operación: A y B en BCD -> Q y R
     //========================================================
-    logic [7:0] a_bcd, b_bcd;
-    logic [3:0] q_bcd, r_bcd;
+    logic [3:0] a_bin, b_bin;
+    logic [3:0] q_bcd, r_bcd;          // salidas “vivas” del divisor
 
-    assign a_bcd = {A1, A0}; // {decenas, unidades}
-    assign b_bcd = {B1, B0};
-
-    //--------------------------------------------------------
-    // 5.a Generación de start diferido para operacion
-    //     - detectamos entrada a STATE_OPERACION
-    //     - contamos OP_WAIT_CYCLES
-    //     - generamos un pulso de 1 ciclo en op_start
-    //--------------------------------------------------------
-    logic op_state_prev;
-    logic op_start;
-    localparam int OP_WAIT_WIDTH = $clog2(OP_WAIT_CYCLES);
-    logic [OP_WAIT_WIDTH-1:0] op_wait_cnt;
-    logic                     op_wait_active;
-
-    // detectar entrada a STATE_OPERACION
-    always_ff @(posedge clk or negedge rst) begin
-        if (!rst)
-            op_state_prev <= 1'b0;
-        else
-            op_state_prev <= (current_state == STATE_OPERACION);
-    end
-
-    // contador de espera para start
-    always_ff @(posedge clk or negedge rst) begin
-        if (!rst) begin
-            op_wait_active <= 1'b0;
-            op_wait_cnt    <= '0;
-        end else begin
-            // si acabamos de entrar a STATE_OPERACION
-            if ((current_state == STATE_OPERACION) && !op_state_prev) begin
-                op_wait_active <= 1'b1;
-                op_wait_cnt    <= '0;
-            end else if (op_wait_active) begin
-                if (op_wait_cnt == OP_WAIT_CYCLES-1) begin
-                    op_wait_active <= 1'b0;   // termina la ventana de espera
-                end else begin
-                    op_wait_cnt <= op_wait_cnt + 1;
-                end
-            end
-        end
-    end
-
-    // pulso de 1 ciclo cuando termina la cuenta
-    assign op_start = op_wait_active && (op_wait_cnt == OP_WAIT_CYCLES-1);
-
-    operacion divisor_inst (
-        .clk      (clk),
-        .rst_n    (rst),
-        .start    (op_start),
-        .a_bcd    (a_bcd),
-        .b_bcd    (b_bcd),
-        .cociente (q_bcd),
-        .resto    (r_bcd)
+    bcd_binario dividendo (.bcd ({A1, A0}), .bin (a_bin));
+    bcd_binario divisor   (.bcd ({B1, B0}), .bin (b_bin));
+    
+    operacion #(.SCAN_DIV(4)) divisor_inst (
+        .clk       (clk),
+        .rst       (rst),
+        .dividendo (a_bin),
+        .divisor   (b_bin),
+        .cociente  (q_bcd),
+        .resto     (r_bcd)
     );
 
+    // *** NUEVO ***: registros donde “congelamos” Q y R una sola vez
+    logic [3:0] Q_LATCH, R_LATCH;
+    logic       op_latched;   // indica que ya guardamos Q/R al menos una vez
+
+    // *** NUEVO ***: contador para esperar en OPERACION
+    localparam int OP_CNT_WIDTH = $clog2(OP_CYCLES);
+    logic [OP_CNT_WIDTH-1:0] op_cnt;
+    logic                    op_done;
+
+    assign op_done = (op_cnt == OP_CYCLES-1);
+
     //========================================================
-    // 6) Secuencial: estado + registros + contador WAIT
+    // 6) Secuencial: estado + registros + contador WAIT + latch Q/R
     //========================================================
     always_ff @(posedge clk or negedge rst) begin
         if (!rst) begin
@@ -173,7 +117,13 @@ module top #(
             A0 <= 4'b1111; A1 <= 4'b1111;
             B0 <= 4'b1111; B1 <= 4'b1111;
 
-            wait_cnt <= '0;
+            wait_cnt   <= '0;
+
+            // *** NUEVO ***
+            op_cnt     <= '0;
+            op_latched <= 1'b0;
+            Q_LATCH    <= 4'b1111;
+            R_LATCH    <= 4'b1111;
         end else begin
             current_state <= next_state;
 
@@ -190,6 +140,26 @@ module top #(
                 end
             endcase
 
+            // *** NUEVO *** manejo del contador de OPERACION y latch de Q/R
+            if (current_state == STATE_OPERACION) begin
+                if (!op_done) begin
+                    op_cnt <= op_cnt + 1;
+                end else begin
+                    op_cnt <= op_cnt; // se puede dejar en el máximo
+                    if (!op_latched) begin
+                        Q_LATCH    <= q_bcd;
+                        R_LATCH    <= r_bcd;
+                        op_latched <= 1'b1;
+                    end
+                end
+            end else begin
+                op_cnt     <= '0;
+                op_latched <= 1'b0;
+                // opcional: limpiar Q_LATCH/R_LATCH cuando salís de OPERACION
+                // Q_LATCH <= 4'b1111;
+                // R_LATCH <= 4'b1111;
+            end
+
             // Manejo de A/B y prev_state solo cuando hay key_down
             if (key_down) begin
                 unique case (current_state)
@@ -201,6 +171,11 @@ module top #(
                                 A0 <= 4'b1111; A1 <= 4'b1111;
                                 B0 <= 4'b1111; B1 <= 4'b1111;
                                 prev_state <= STATE_INPUT_A;
+
+                                // *** NUEVO *** reset también resultado latcheado
+                                op_latched <= 1'b0;
+                                Q_LATCH    <= 4'b1111;
+                                R_LATCH    <= 4'b1111;
                             end
 
                             // '#' = 1110:
@@ -234,6 +209,11 @@ module top #(
                             A0 <= 4'b1111; A1 <= 4'b1111;
                             B0 <= 4'b1111; B1 <= 4'b1111;
                             prev_state <= STATE_INPUT_A;
+
+                            // *** NUEVO ***
+                            op_latched <= 1'b0;
+                            Q_LATCH    <= 4'b1111;
+                            R_LATCH    <= 4'b1111;
                         end
                     end
 
@@ -297,9 +277,9 @@ module top #(
             STATE_INPUT_B:
                 display_data = {4'b1011, 4'b1111, B1, B0};
 
-            // [izq -> der]: _, Q, _, R
+            // [izq -> der]: _, Q, _, R  (usamos los latcheados)
             STATE_OPERACION:
-                display_data = {A0, q_bcd, B0, r_bcd};
+                display_data = {a_bin, Q_LATCH, b_bin, R_LATCH};
 
             default:
                 display_data = 16'hFFFF;

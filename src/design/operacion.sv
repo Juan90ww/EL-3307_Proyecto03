@@ -1,82 +1,61 @@
-module operacion (
-    input  logic       clk,
-    input  logic       rst_n,    // reset global activo en bajo
-    input  logic       start,    // pulso 1 ciclo para iniciar la división
-    input  logic [7:0] a_bcd,    // Dividendo en BCD: {decenas, unidades}
-    input  logic [7:0] b_bcd,    // Divisor   en BCD: {decenas, unidades}
-    output logic [3:0] cociente, // Q[3:0]
-    output logic [3:0] resto     // R[3:0]
+module operacion #(
+    parameter int SCAN_DIV = 500
+)(
+    input   logic       clk,
+    input   logic       rst,
+    input   logic [3:0] dividendo,
+    input   logic [3:0] divisor,
+    output  logic [3:0] cociente,
+    output  logic [3:0] resto
 );
 
-    // --------------------------------------------------
-    // 1) Conversión BCD -> binario
-    // --------------------------------------------------
-    logic [3:0] a_dec, a_uni;
-    logic [3:0] b_dec, b_uni;
-    logic [3:0] A_bin;   // dividendo
-    logic [3:0] B_bin;   // divisor
+    logic [$clog2(SCAN_DIV)-1:0] scan_div = 0;
+    logic [1:0] contador = 0;
+    logic [3:0] a_reg; // Dividendo
+    logic [3:0] b_reg; // Divisor
+    logic [3:0] r_reg; // Resto
+    logic [3:0] q_reg; // cociente
+
+    // Creo variables para operar
+    logic        [3:0] r_next;
+    logic signed [4:0] d_next; // Resta (r - b)
 
     always_comb begin
-        // si la decena es 1 => 10, si no => 0
-        a_dec = (a_bcd[7:4] == 4'b0001) ? 4'b1010    : 4'b0000;
-        a_uni = (a_bcd[3:0] != 4'b1111) ? a_bcd[3:0] : 4'b0000;
-        b_dec = (b_bcd[7:4] == 4'b0001) ? 4'b1010    : 4'b0000;
-        b_uni = (b_bcd[3:0] != 4'b1111) ? b_bcd[3:0] : 4'b0000;
-
-        A_bin = a_uni + a_dec;
-        B_bin = b_uni + b_dec;
+        a_reg  = dividendo;
+        b_reg  = divisor;
+        // Logica de division
+        r_next = {r_reg[2:0], a_reg[3 - contador]};               // R = { R' << 1, A_i }
+        d_next = $signed({1'b0, r_next}) - $signed({1'b0, b_reg}); // D = R - B        
     end
 
-    // --------------------------------------------------
-    // 2) Registros del algoritmo (resto, cociente, índice, running)
-    // --------------------------------------------------
-    logic [3:0] resto_reg;
-    logic [3:0] coc_reg;
-    logic [1:0] idx;
-    logic       running;
-
-    logic [3:0] R_shift;
-    logic signed [4:0] D;
-
-    always_comb begin
-        R_shift = {resto_reg[2:0], A_bin[idx]};                  // R = {R'<<1, A_i}
-        D       = $signed({1'b0, R_shift}) - $signed({1'b0, B_bin}); // D = R - B
-    end
-
-    // --------------------------------------------------
-    // 3) Secuencial con start (sin latches)
-    // --------------------------------------------------
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            resto_reg <= 4'b0000;
-            coc_reg   <= 4'b0000;
-            idx       <= 2'd0;
-            running   <= 1'b0;
+    always_ff @(posedge clk or negedge rst) begin
+        if (!rst) begin
+            scan_div  <= 0;
+            contador  <= 0;
+            r_reg     <= 4'b0000;
+            q_reg     <= 4'b0000;
         end else begin
-            if (start) begin
-                // iniciar nueva división
-                resto_reg <= 4'b0000;
-                coc_reg   <= 4'b0000;
-                idx       <= 2'd3;
-                running   <= 1'b1;
-            end else if (running) begin
-                if (D < 0) begin
-                    coc_reg[idx] <= 1'b0;
-                    resto_reg    <= R_shift;
-                end else begin
-                    coc_reg[idx] <= 1'b1;
-                    resto_reg    <= D[3:0];
-                end
 
-                if (idx == 2'd0)
-                    running <= 1'b0;     // terminamos
-                else
-                    idx <= idx - 2'd1;
+            if (scan_div == SCAN_DIV-1) begin
+
+            if (d_next < 0) begin
+                q_reg[3 - contador] <= 1'b0;
+                r_reg               <= r_next;
+            end else begin
+                q_reg[3 - contador] <= 1'b1;
+                r_reg               <= d_next[3:0];
+            end
+
+            // divisor para cambio de indice
+            scan_div <= 0;
+            contador <= (contador == 3) ? 0: contador + 1;
+            end else begin
+                scan_div <= scan_div + 1;
             end
         end
     end
-
-    assign cociente = coc_reg;
-    assign resto    = resto_reg;
-
+    
+    // Salidal del modulo
+    assign cociente = q_reg;
+    assign resto    = r_reg;
 endmodule
