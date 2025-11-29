@@ -1,8 +1,8 @@
 module top #(
     // Espera por defecto de ~650 ms @27 MHz
     parameter int WAIT_CYCLES = 17_550_000,
-    // *** NUEVO ***: ciclos que esperamos en OPERACION antes de “congelar” Q y R
-    parameter int OP_CYCLES   = 16
+    //Ciclos que esperamos en OPERACION antes de “congelar” Q y R
+    parameter int OP_CYCLES   = 13_500_000
 )(
     input  logic       clk,   // Reloj de 27 MHz
     input  logic       rst,   // Reset activo en bajo
@@ -95,11 +95,11 @@ module top #(
         .resto     (r_bcd)
     );
 
-    // *** NUEVO ***: registros donde “congelamos” Q y R una sola vez
+    // Registros donde “congelamos” Q y R una sola vez
     logic [3:0] Q_LATCH, R_LATCH;
     logic       op_latched;   // indica que ya guardamos Q/R al menos una vez
 
-    // *** NUEVO ***: contador para esperar en OPERACION
+    // Contador para esperar en OPERACION
     localparam int OP_CNT_WIDTH = $clog2(OP_CYCLES);
     logic [OP_CNT_WIDTH-1:0] op_cnt;
     logic                    op_done;
@@ -119,7 +119,7 @@ module top #(
 
             wait_cnt   <= '0;
 
-            // *** NUEVO ***
+            // Se limpia latch Q/R
             op_cnt     <= '0;
             op_latched <= 1'b0;
             Q_LATCH    <= 4'b1111;
@@ -140,12 +140,12 @@ module top #(
                 end
             endcase
 
-            // *** NUEVO *** manejo del contador de OPERACION y latch de Q/R
+            // Manejo del contador de OPERACION y latch de Q/R
             if (current_state == STATE_OPERACION) begin
                 if (!op_done) begin
                     op_cnt <= op_cnt + 1;
                 end else begin
-                    op_cnt <= op_cnt; // se puede dejar en el máximo
+                    op_cnt <= op_cnt;
                     if (!op_latched) begin
                         Q_LATCH    <= q_bcd;
                         R_LATCH    <= r_bcd;
@@ -155,9 +155,6 @@ module top #(
             end else begin
                 op_cnt     <= '0;
                 op_latched <= 1'b0;
-                // opcional: limpiar Q_LATCH/R_LATCH cuando salís de OPERACION
-                // Q_LATCH <= 4'b1111;
-                // R_LATCH <= 4'b1111;
             end
 
             // Manejo de A/B y prev_state solo cuando hay key_down
@@ -273,7 +270,7 @@ module top #(
             STATE_INPUT_A:
                 display_data = {4'b1010, 4'b1111, A1, A0};
 
-            // [izq -> der]: b, _, B1, B0
+            // [izq -> der]: B, _, B1, B0
             STATE_INPUT_B:
                 display_data = {4'b1011, 4'b1111, B1, B0};
 
