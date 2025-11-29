@@ -29,12 +29,16 @@ module teclado #(
             2: columnas <= 4'b1101;
             3: columnas <= 4'b1110;
         endcase
+
+        // Por defecto: ningún boton
+        boton <= 4'b1111;
+
         case(columnas)
             4'b0111:begin
                 if(filas == 4'b0111) boton <= 4'b0001; //1
                 if(filas == 4'b1011) boton <= 4'b0100; //4
                 if(filas == 4'b1101) boton <= 4'b0111; //7
-                if(filas == 4'b1110) boton <= 4'b0000; //*
+                if(filas == 4'b1110) boton <= 4'b1101; //*
             end
 
             4'b1011:begin

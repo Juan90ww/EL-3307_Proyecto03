@@ -7,7 +7,7 @@ module debounce (
 
     // Parámetro para ajustar el tiempo de debounce.
     // El tiempo de estabilización ≈ 2^N ciclos de reloj.
-    parameter int N = 12;
+    parameter int N = 14;
 
     logic [N-1:0] reg_sat, reg_next;
     logic SAMPLE1, SAMPLE2;
