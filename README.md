@@ -25,7 +25,7 @@ el cociente Q
 el residuo R
 
 Finalmente, los resultados se envían al sistema de conversión binario-a-BCD y luego al multiplexor de displays, el cual refresca los 4 dígitos a suficiente frecuencia para aparentar iluminación continua.
-Con esto se obtiene una implementación funcional totalmente compatible con la FPGA Gowin Tang Nano 9K
+Con esto se obtiene una implementación funcional totalmente compatible con la FPGA Gowin Tang Nano 9K.
 
 ### 3.2 Descripción de cada subsistema 
 
