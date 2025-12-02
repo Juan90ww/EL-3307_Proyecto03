@@ -119,7 +119,7 @@ Resultado al ejecutar make WV
 
 ## 6. Reporte de velocidades
 
-## 7, Análisis de principales problemas hallados durante el trabajo 
+## 7 Análisis de principales problemas hallados durante el trabajo 
 
 ## Bitacoras 
 
