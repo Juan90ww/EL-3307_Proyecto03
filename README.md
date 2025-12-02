@@ -104,8 +104,28 @@ El top.sv define qué mostrar; en INPUT_A → A1, A0, en INPUT_B → B1, B0, en 
 
 ## 4. Simulación funcional del sistema completo
 
+Para validar el funcionamiento lógico del sistema sumador BCD implementado en FPGA, se desarrolló un testbench en SystemVerilog que permite simular el comportamiento completo del circuito antes de su síntesis física.
+
+Resultado al ejecutar makeTest
+
+![WhatsApp Image 2025-12-02 at 3 06 13 PM](https://github.com/user-attachments/assets/b1b622e0-4423-4ef7-aeb6-b1bd80676e5b)
+
+Resultado al ejecutar make WV
+
+![WhatsApp Image 2025-12-02 at 3 06 26 PM](https://github.com/user-attachments/assets/c459da84-3561-432a-9617-644f82966f82)
+
+
 ## 5. Análisis de consumo de recursos
 
 ## 6. Reporte de velocidades
 
 ## 7, Análisis de principales problemas hallados durante el trabajo 
+
+## Bitacoras 
+
+### Bitacora  Ismael Isaac Flores Mercado
+
+
+
+
+### Bitacora Juan Esteban Obando Perez
