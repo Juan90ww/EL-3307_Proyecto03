@@ -29,85 +29,74 @@ Con esto se obtiene una implementación funcional totalmente compatible con la F
 
 ### 3.2 Descripción de cada subsistema 
 
-1. Módulo de lectura del teclado (Keypad Reader + Debouncer)
+#### 1. Subsistema de Lectura de Datos
 
-Este bloque se encarga de:
+Este subsistema permite ingresar el dividendo A y el divisor B desde un teclado matricial de 16 teclas. Se encarga de: Sincronizar las señales mecánicas del teclado, eliminar rebotes mediante un módulo debounce, escanear columnas del teclado para detectar teclas, setectar flanco de presión (key_down) y administrar el proceso de ingreso mediante una máquina de estados finita (FSM).
 
-generar el patrón de escaneo por filas del teclado 4×4,
+Debounce:
 
-leer el estado de las columnas,
+El módulo debounce toma cada fila del teclado y: Sincroniza la señal mediante doble muestreo (SAMPLE1, SAMPLE2). detecta si la señal ha cambiado, utiliza un contador saturable que debe estabilizarse durante 2ⁿ ciclos para considerar válida la tecla. genera la señal estable key_pressed.
 
-identificar cuál tecla fue presionada,
+Resultado: cada tecla es vista como una señal limpia y estable.
 
-filtrar rebotes mecánicos mediante un debouncer basado en contador.
+Teclado:
+Este módulo implementa un escaneo de columnas:
 
-El módulo asegura que solo un valor limpio y estable se entregue al sistema superior.
-Cada tecla genera un código hexadecimal entre 0 y F, el cual se envía junto con un pulso key_valid.
+Cada cierto número de ciclos activa una columna distinta. Lee las filas para determinar cuál tecla se presionó. Convierte la combinación fila/columna en un valor hexadecimal de 4 bits.
 
-2. Módulo de captura de operandos
+#### 2. Subsistema de Cálculo de División Entera
 
-Recibe las teclas válidas provenientes del lector y las organiza en:
+Este subsistema convierte primero los valores en BCD a binario (0–15) mediante el módulo; bcd_binario, convierte {decenas, unidades} en un valor de 4 bits (0–15), luego entra al divisor secuencial:
 
-Primer operando (dividendo) – dos dígitos hex (MSB y LSB)
+Divisor secuencial (operacion.sv)
 
-Segundo operando (divisor) – dos dígitos hex
+Implementa el algoritmo iterativo de división de enteros:
 
-El módulo cuenta con una pequeña máquina de estados:
+Desplazar residuo, insertar bits del dividendo, realizar resta, decidir entre aceptar la resta o conservar residuo, Formar gradualmente el cociente. Este divisor opera en 4 iteraciones, una por bit del dividendo, el módulo usa:
 
-WAIT_A_MSB
+Registros r_reg (resto) y q_reg (cociente)
 
-WAIT_A_LSB
+Un contador para avanzar por los bits y una pequeña máquina de control implícita (derivada del pseudocódigo).
 
-WAIT_B_MSB
+Latch de resultados
 
-WAIT_B_LSB
+El diseño incluye:
 
-READY
+op_cnt → contador para darle tiempo al divisor
 
-Una vez que los cuatro dígitos han sido ingresados en orden, se activa la señal operands_ready.
-El módulo también convierte cada dígito hexadecimal en su representación binaria (7 bits máximo).
+Q_LATCH y R_LATCH → registros donde se congela el resultado una vez estable
 
-3. Módulo divisor binario (Restoring Divider)
+op_latched → señal que indica que el divisor terminó
 
-Implementa el algoritmo clásico de división restaurada, usando registros y lógica secuencial:
+De esta manera, los resultados no siguen cambiando mientras se actualiza el display.
 
-Registro Q: contiene el dividendo y acumula el cociente.
+El subsistema entrega:
 
-Registro A: acumulador donde se realizan las restas parciales.
+Q_LATCH → cociente (4 bits)
 
-Comparador y restador: permiten determinar si el divisor cabe en el acumulador.
+R_LATCH → residuo (4 bits)
 
-Control secuencial mediante un contador de iteraciones.
 
-4. Convertidor binario–a–BCD
+#### 3. Subsistema de Conversión a BCD
+
+Aunque la especificación original pide convertir binario → BCD, en este proyecto los resultados del divisor ya corresponden a números pequeños (0–15), por lo cual basta con enviarlos directamente al display en formato hexadecimal.
+Si se requiriera la conversión completa, el módulo bcd_binario o un conversor tipo Double Dabble se podrían utilizar. Este subsistema permite que los datos enviados al display sean los adecuado.
+
+#### 4. Subsistema de Despliegue en Display de 7 Segmentos
    
-El divisor produce resultados binarios (hasta 7 bits para el cociente y residuo).
-Para poder desplegarlos en los displays, es necesario convertirlos a BCD.
+Este bloque toma el valor a mostrar y lo distribuye entre los cuatro dígitos disponibles.
 
-Se carga el número binario en un registro ampliado, luego se desplaza bit a bit hacia la izquierda y antes de cada desplazamiento, si algún dígito BCD ≥ 5, se le suman 3. El módulo produce:
+4.1 Multiplexado
 
-bcd3, bcd2, bcd1, bcd0
+El módulo realiza; división de frecuencia para obtener ~1 kHz por dígito, alterna entre 4 ánodos (anodo_selec), registro intermedio para evitar glitches.
 
-conv_done
+4.2 Decodificación HEX → 7 segmentos
 
-5. Multiplexor de displays de 7 segmentos (Display Mux)
+El módulo display_bin_hex convierte un nibble de 4 bits en su representación en 7 segmentos (activo en bajo).
 
-Realiza:
-Selección temporal del dígito activo (anodos).
-Conversión de cada dígito BCD en su patrón de segmentos (a–g).
-Refresco a frecuencia suficientemente alta (> 1 kHz).
-Este módulo funciona de manera continua, independientemente de la división.
+4.3 Datos mostrados según el estado
 
-6. Módulo top (Integración general)
-
-Este bloque interconecta todos los anteriores.
-Su función es coordinar:
-entrada desde el teclado,
-carga y validación de operandos,
-inicio del módulo divisor,
-conversión binaria a BCD,
-despliegue en los displays.
-El módulo top es completamente sincronizado por el reloj del sistema (27 MHz) y gestiona las señales de control (start, ready, done) de cada subsistema.
+El top.sv define qué mostrar; en INPUT_A → A1, A0, en INPUT_B → B1, B0, en OPERACION → a_bin, Q_LATCH, b_bin, R_LATCH. Así el usuario puede ver lo que ingresa y luego los resultados.
 
 ### 3.3 Diagramas de bloques 
 
