@@ -13,7 +13,7 @@ SOURCES := $(wildcard ../design/*.v ../design/*.sv)
 CONSTRAINTS = ../constr/Modulo_Pines.cst
 
 # Nombre del módulo top (sin extensión)
-TOP_DESIGN = operacion
+TOP_DESIGN = top
 TOP_TB     = tb_operacion
 
 # Testbench por defecto (top-level)
