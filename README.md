@@ -194,14 +194,15 @@ Esto demuestra que; el diseño es estable, no hay problemas de timing, el multip
 
 ## 7 Análisis de principales problemas hallados durante el trabajo 
 
-Problema con el registro que guarda las teclas. Posible solución, utilizar un contador mas lento para el guardado de los datos funcionando de forma asincrona.
+Problema al capturar datos de la división de 4 bits en combinacional. Creemos que estamos tomando los datos de manera desincronizada. Testbench 100% funcional.
 Problema al intentar implementar la division para 7 bits, la simulacion se detenia y no se ejecutaba el programa.
 
 ## Bitacoras 
 
 ### Bitacora  Ismael Isaac Flores Mercado
 
-
+![2022190442_1](images/B1_2022190442.jpeg)
+![2022190442_2](images/B2_2022190442.jpeg)
 
 
 ### Bitacora Juan Esteban Obando Perez
