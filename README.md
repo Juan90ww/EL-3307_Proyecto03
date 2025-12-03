@@ -76,7 +76,6 @@ Q_LATCH → cociente (4 bits)
 
 R_LATCH → residuo (4 bits)
 
-
 #### 3. Subsistema de Conversión a BCD
 
 Aunque la especificación original pide convertir binario → BCD, en este proyecto los resultados del divisor ya corresponden a números pequeños (0–15), por lo cual basta con enviarlos directamente al display en formato hexadecimal.
@@ -100,21 +99,38 @@ El top.sv define qué mostrar; en INPUT_A → A1, A0, en INPUT_B → B1, B0, en 
 
 ### 3.3 Diagramas de bloques 
 
-Subsistema 1,  Subsistema de Lectura de Datos
+Subsistema 1,  Subsistema de Lectura de Datos,
+Escanea continuamente el teclado matricial hexadecimal y detecta qué tecla fue presionada, aplicando eliminación de rebote para evitar lecturas falsas.
 
-Subsistema 2, Subsistema de Cálculo de División Entera
+![WhatsApp Image 2025-12-03 at 11 31 58 AM](https://github.com/user-attachments/assets/405bb852-5569-49a2-88e5-7c3529d796d7)
 
-Subsistema 3, Subsistema de Conversión a BCD
 
-Subsistema 4, Subsistema de Despliegue en Display de 7 Segmentos
+Subsistema 2, Subsistema de Cálculo de División Entera; El módulo realiza división binaria secuencial de 4 bits utilizando un algoritmo clásico similar al non-restoring division o restoring division, ejecutado en 4 iteraciones, una por cada bit del dividendo.
+
+![WhatsApp Image 2025-12-03 at 11 47 40 AM](https://github.com/user-attachments/assets/27a2fa7a-3072-40b7-a25c-100721cfa415)
+
+
+Subsistema 3, Subsistema de Conversión a BCD; Convierte un número binario (resultado de la suma) a formato BCD, para poder mostrarlo en los displays de 7 segmentos.
+
+![WhatsApp Image 2025-12-03 at 11 36 05 AM](https://github.com/user-attachments/assets/321bb6b8-416e-4a7e-87fb-d87d2dab10db)
+
+
+Subsistema 4, Subsistema de Despliegue en Display de 7 Segmentos; Controla cuatro displays de 7 segmentos compartiendo las líneas de segmentos, activando un dígito a la vez de forma secuencial (multiplexado dinámico).
+
+![WhatsApp Image 2025-12-03 at 11 39 26 AM](https://github.com/user-attachments/assets/11ebbedc-aacf-4129-b9a7-c9bbde13c765)
+
 
 ### 3.4 Diagramas de estado 
 
 FSM del Lector de Teclado
 
-FMS division 
+![WhatsApp Image 2025-12-03 at 11 48 55 AM](https://github.com/user-attachments/assets/6660d58c-5bb8-4a6c-8305-e4a925645952)
+
 
 FSM del Control de Display
+
+![WhatsApp Image 2025-12-03 at 11 49 06 AM](https://github.com/user-attachments/assets/8a0a19b4-9557-44a4-a2ad-161ce7b65729)
+
 
 ## 4. Simulación funcional del sistema completo
 
