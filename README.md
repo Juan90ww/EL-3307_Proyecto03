@@ -100,7 +100,21 @@ El top.sv define qué mostrar; en INPUT_A → A1, A0, en INPUT_B → B1, B0, en 
 
 ### 3.3 Diagramas de bloques 
 
+Subsistema 1,  Subsistema de Lectura de Datos
+
+Subsistema 2, Subsistema de Cálculo de División Entera
+
+Subsistema 3, Subsistema de Conversión a BCD
+
+Subsistema 4, Subsistema de Despliegue en Display de 7 Segmentos
+
 ### 3.4 Diagramas de estado 
+
+FSM del Lector de Teclado
+
+FMS division 
+
+FSM del Control de Display
 
 ## 4. Simulación funcional del sistema completo
 
