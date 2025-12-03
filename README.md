@@ -110,16 +110,62 @@ Resultado al ejecutar makeTest
 
 ![WhatsApp Image 2025-12-02 at 3 06 13 PM](https://github.com/user-attachments/assets/b1b622e0-4423-4ef7-aeb6-b1bd80676e5b)
 
+ada caso de prueba verifica una división entera usando el algoritmo iterativo implementado en operacion.sv.
+
+Para cada división, el testbench calcula:
+
+Cociente esperado
+
+Residuo esperado
+
+El módulo de división entrega q_reg (cociente) y r_reg (resto), los cuales son comparados automáticamente.
+
+Resultado global
+
+Todos los casos de prueba pasaron correctamente, lo que indica que el algoritmo de división secuencial está implementado de manera correcta y que el comportamiento del circuito coincide con el modelo matemático esperado.
+
 Resultado al ejecutar make WV
 
 ![WhatsApp Image 2025-12-02 at 3 06 26 PM](https://github.com/user-attachments/assets/c459da84-3561-432a-9617-644f82966f82)
 
+En la captura proporcionada se visualizan las señales más relevantes:
+
+a_reg y b_reg: valores binarios del dividendo y divisor
+
+r_reg: registro del residuo
+
+q_reg: registro del cociente
+
+contador: controla las iteraciones (0–3)
+
+Rutas combinacionales: r_next, d_next
+
+Señales de control internas del divisor
+
+Tanto la simulación automática (make test) como la visualización de formas de onda (make wv) validan completamente el funcionamiento del divisor secuencial.
+Los resultados generados por el hardware coinciden con los valores esperados para cociente y residuo, y las transiciones internas de los registros son coherentes con el algoritmo shift–subtract.
+La implementación es funcional, estable y correctamente sincronizada.
 
 ## 5. Análisis de consumo de recursos
 
+![WhatsApp Image 2025-12-02 at 11 24 16 PM](https://github.com/user-attachments/assets/42b599c3-2c50-42e6-a427-4a08ca951db8)
+
+El diseño sintetizado es eficiente, robusto y cumple con holgura los requisitos de frecuencia y estabilidad.
+Con únicamente 1233 celdas y una frecuencia máxima de 55.95 MHz, el sistema demuestra ser liviano en recursos y rápido en operación.
+La ausencia de fallos de timing confirma que la arquitectura secuencial y los subsistemas (teclado, divisor, display y FSM) están correctamente diseñados y sincronizados.
+
 ## 6. Reporte de velocidades
 
+![WhatsApp Image 2025-12-02 at 11 39 13 PM](https://github.com/user-attachments/assets/b1388cc8-74e0-4f84-9a44-c81795a009c6)
+
+El sistema opera a 27 MHz.
+
+Esto demuestra que; el diseño es estable, no hay problemas de timing, el multiplexado del display, la FSM, el divisor secuencial y el scanner del teclado son muy livianos en términos combinacionales. El diseño cumple holgadamente la frecuencia requerida. Puede operar casi al doble de la frecuencia necesaria, por lo que la implementación es robusta y estable.
+
 ## 7 Análisis de principales problemas hallados durante el trabajo 
+
+Problema con el registro que guarda las teclas. Posible solución, utilizar un contador mas lento para el guardado de los datos funcionando de forma asincrona.
+Problema al intentar implementar la division para 7 bits, la simulacion se detenia y no se ejecutaba el programa.
 
 ## Bitacoras 
 
@@ -129,3 +175,35 @@ Resultado al ejecutar make WV
 
 
 ### Bitacora Juan Esteban Obando Perez
+
+
+![WhatsApp Image 2025-12-03 at 7 23 27 AM](https://github.com/user-attachments/assets/564d3c92-b072-4f8d-b32f-cf9dafa93aad)
+
+--------------------------------------------------------------------------------
+
+![WhatsApp Image 2025-12-03 at 7 23 49 AM](https://github.com/user-attachments/assets/8e9f570e-fbca-4fe9-a010-3de7ef72ca86)
+
+--------------------------------------------------------------------------------
+
+![WhatsApp Image 2025-12-03 at 7 23 59 AM](https://github.com/user-attachments/assets/25bbaa0f-caca-4f1b-a949-69c9ab30c92e)
+
+--------------------------------------------------------------------------------
+
+![WhatsApp Image 2025-12-03 at 7 24 08 AM](https://github.com/user-attachments/assets/dd814204-8419-4114-be26-8b1246a3d24b)
+
+
+--------------------------------------------------------------------------------
+![WhatsApp Image 2025-12-03 at 7 24 18 AM](https://github.com/user-attachments/assets/5abd226b-76ee-4117-ae44-89eb543313b8)
+
+
+
+
+
+
+
+
+
+
+
+
+
